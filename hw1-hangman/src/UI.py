@@ -150,18 +150,18 @@ class GameUI:
         ++++++++++++++++++++++
         """]
 
-    #информация на каждой игровой итерации    
+    # Информация на каждой игровой итерации    
     def get_game_stat(self, game):
         os.system("cls")
 
-        #общая информация
-        print(f"{self.get_hangman_stage(game.get_picture_stage())}\nКатегория: {game.get_category()}\nСлово: {game.get_cur_state_word()}. Попыток осталось {game.get_attemps()}\nИспользованные буквы: {game.get_prev_letters()}")
+        # Общая информация
+        print(f"{self.get_hangman_stage(game.get_picture_stage())}\nКатегория: {game.get_category()}\nСлово: {game.get_cur_state_word()}. Попыток осталось {game.get_attemps()}\nИспользованные буквы: {', '.join(list(game.get_prev_letters()))}")
 
-        #вывод активированной подсказки
+        # Вывод активированной подсказки
         if game.get_is_hint_active():
             print(game.get_hint())
 
-    #геттеры
+    # Геттеры
     def get_len_hangman_stage(self):
         return len(self._hangman_stage)
 

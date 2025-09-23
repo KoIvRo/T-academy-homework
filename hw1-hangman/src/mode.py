@@ -5,11 +5,13 @@ from UI import GameUI
 def not_interactive_mode(hidden_word, visible_word):
     if not (hidden_word.isalpha() and visible_word.isalpha()):
         raise ValueError("Ввод должен содержать только буквы")
+    if (len(hidden_word) != len(visible_word)):
+        raise ValueError("Слова должны быть одинковой длины")
     hidden_word, visible_word = hidden_word.lower(), visible_word.lower()
     is_win = "POS"
-    for letter in hidden_word:
-        if letter in visible_word:
-            print(letter, end = "")
+    for ind in range(len(hidden_word)):
+        if hidden_word[ind] == visible_word[ind]:
+            print(hidden_word[ind], end = "")
         else:
             is_win = "NEG"
             print("*", end = "")

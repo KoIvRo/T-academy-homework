@@ -1,4 +1,4 @@
-class MainGame: # Класс для освновной логики игры, в нем 2 важные
+class MainGame:
     def __init__(self, word, hint, category, attemps, max_picture_stage):
         self._word = word
         self._hint = hint
@@ -15,7 +15,7 @@ class MainGame: # Класс для освновной логики игры, в
     def guess_letter(self):
         letter = input("Введите букву (что бы взять подсказку введите ?): ").strip().lower()
 
-        while True:# Проверка ввода буквы
+        while True:
             if letter == "?" and not self.get_is_hint_active():
                 self.set_is_hint_active(True)
                 break
@@ -23,19 +23,19 @@ class MainGame: # Класс для освновной логики игры, в
                 print("Вы уже брали подсказку")
             elif len(letter) != 1:
                 print("Одну букву")
-            elif not letter.isalpha():
-                print("Только буквы")
+            elif not letter.isalpha() or letter not in "абвгдеёжзийклмнопрстуфхцчшщъыьэюя":
+                print("Только русские буквы")
             elif letter in self.get_prev_letters():
                 print("Буква уже была использована")
             else:
                 break
             letter = input("Введите букву (что бы взять подсказку введите ?): ").strip().lower()
 
-        #пропускаем обновление слова, переходим к новой игровой итерации
+        # Пропускаем обновление слова, переходим к новой игровой итерации
         if letter == "?":
             return
 
-        #обновление слова
+        # Обновление слова
         is_guessed = False
         for ind in range(len(self.get_word())):
 
@@ -57,7 +57,7 @@ class MainGame: # Класс для освновной логики игры, в
         else:
             print(f"Попытки закончились\nВы програли, слово {self.get_word()}")
     
-    #getter и setter
+    # Геттеры и сеттеры(мутаторы)
     def get_word(self):
         return self._word
     
@@ -87,7 +87,7 @@ class MainGame: # Класс для освновной логики игры, в
         self._cur_state_word[ind] = letter
     
     def get_prev_letters(self):
-        return ", ".join(list(self._prev_letters))
+        return self._prev_letters
     
     def add_prev_letter(self, letters):
         self._prev_letters.add(letters)
