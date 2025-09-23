@@ -23,7 +23,7 @@ class TetsNotInteractiveMode(unittest.TestCase):
     def test_not_interactive_mode_pos_word_check(self, mock_stdout):
         not_interactive_mode("абвгд", "бвгад")
         output = mock_stdout.getvalue()
-        self.assertEqual(output, "абвгд;POS\n")
+        self.assertEqual(output, "****д;NEG\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_not_interactive_mode_pos_registr_check(self, mock_stdout):
@@ -41,6 +41,12 @@ class TetsNotInteractiveMode(unittest.TestCase):
             not_interactive_mode("1", "1")
         
         self.assertEqual(str(context.exception), "Ввод должен содержать только буквы")
+    
+    def test_not_interactive_mode_diffirent_len_input(self):
+        with self.assertRaises(ValueError) as context:
+            not_interactive_mode("абв", "абвг")
+        
+        self.assertEqual(str(context.exception), "Слова должны быть одинковой длины")
 
 class TestInteractiveMode(unittest.TestCase):
     @patch('mode.MainGame')

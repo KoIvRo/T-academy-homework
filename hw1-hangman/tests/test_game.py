@@ -15,10 +15,10 @@ class TestGame(unittest.TestCase):
         
         self.assertEqual(game.get_cur_state_word(), "к**")
         self.assertEqual(game.get_attemps(), 5)
-        self.assertEqual(game.get_prev_letters(), "к")
+        self.assertEqual(game.get_prev_letters(), {'к'})
         self.assertFalse(game.get_is_win())
 
-    @patch('builtins.input', return_value='x')
+    @patch('builtins.input', return_value='х')
     @patch('builtins.print')
     def test_guess_letter_incorrect(self, mock_print, mock_input):
         game = MainGame("кот", "hint", "category", 5, 7)
@@ -27,7 +27,7 @@ class TestGame(unittest.TestCase):
         
         self.assertEqual(game.get_cur_state_word(), "***")
         self.assertEqual(game.get_attemps(), 4)
-        self.assertEqual(game.get_prev_letters(), "x")
+        self.assertEqual(game.get_prev_letters(), {"х"})
         self.assertEqual(game.get_picture_stage(), 1)
         self.assertFalse(game.get_is_win())
 
@@ -40,7 +40,7 @@ class TestGame(unittest.TestCase):
         
         self.assertTrue(game.get_is_hint_active())
         self.assertEqual(game.get_attemps(), 5)
-        self.assertEqual(game.get_prev_letters(), "")
+        self.assertEqual(game.get_prev_letters(), set())
         self.assertEqual(game.get_cur_state_word(), "***")
 
     @patch('builtins.input', side_effect=['?', '?', 'к'])
@@ -70,7 +70,17 @@ class TestGame(unittest.TestCase):
         
         game.guess_letter()
         
-        mock_print.assert_any_call("Только буквы")
+        mock_print.assert_any_call("Только русские буквы")
+        self.assertEqual(game.get_cur_state_word(), "к**")
+
+    @patch('builtins.input', side_effect=['1', 'r', "к"])
+    @patch('builtins.print')
+    def test_guess_letter_non_russians(self, mock_print, mock_input):
+        game = MainGame("кот", "hint", "category", 5, 7)
+        
+        game.guess_letter()
+        
+        mock_print.assert_any_call("Только русские буквы")
         self.assertEqual(game.get_cur_state_word(), "к**")
 
     @patch('builtins.input', side_effect=['к', 'к', 'о'])
@@ -83,7 +93,7 @@ class TestGame(unittest.TestCase):
         
         mock_print.assert_any_call("Буква уже была использована")
         self.assertEqual(game.get_cur_state_word(), "ко*")
-        self.assertEqual(game.get_prev_letters(), "к, о")
+        self.assertEqual(game.get_prev_letters(), {'о', 'к'})
 
     def test_win_condition(self):
         game = MainGame("кот", "hint", "category", 5, 7)
