@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from prepare import PrepareGame
 from game import MainGame
 from UI import GameUI
@@ -19,14 +23,16 @@ def not_interactive_mode(hidden_word, visible_word):
 
 def interactive_mode():
     category, word, hint = PrepareGame.word_choice()
-    attemps = PrepareGame.difficult_choice()
+    tuple_attempts_and_sub_attemps = PrepareGame.difficult_choice()
 
     game_ui = GameUI()
-    game = MainGame(word, hint, category, attemps, game_ui.get_len_hangman_stage())#последнии параметр это количество рисунков висельника
+    game = MainGame(word, hint, category, tuple_attempts_and_sub_attemps)
 
-    # Цикл игровых итераций
-    while not game.get_is_win() and game.get_attemps() > 0:
-        game_ui.get_game_stat(game)
+    while game.game_is_active():
+        game_stat = game.get_game_stat()
+        game_ui.print_game_stat(game_stat)
+
         game.guess_letter()
     
-    game.status_check()
+    game_stat = game.get_game_stat()
+    game_ui.print_final_stat(game_stat)

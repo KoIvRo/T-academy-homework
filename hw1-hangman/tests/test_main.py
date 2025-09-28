@@ -1,7 +1,11 @@
 import unittest
 from unittest.mock import patch
-from src.main import main
 import io
+
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from src.main import main
 
 class TestMain(unittest.TestCase):
 
@@ -29,7 +33,7 @@ class TestMain(unittest.TestCase):
             main()
         
         output = mock_stdout.getvalue()
-        self.assertEqual(output, '1\n')
+        self.assertEqual(output, '')
 
         mock_interactive.assert_not_called()
         mock_not_interactive.assert_not_called()

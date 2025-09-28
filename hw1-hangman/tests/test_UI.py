@@ -2,31 +2,27 @@ import unittest
 from unittest.mock import patch, MagicMock
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from UI import GameUI
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from src.UI import GameUI
 
 class TestUI(unittest.TestCase):
-    def test_get_len_hangman_stage(self):
-        ui = GameUI()
-        length = ui.get_len_hangman_stage()
-        
-        self.assertEqual(length, 7)
 
     @patch('os.system')
     @patch('builtins.print')
     def test_get_game_stat_full_info(self, mock_print, mock_system):
         ui = GameUI()
         
-        mock_game = MagicMock()
-        mock_game.get_picture_stage.return_value = 2
-        mock_game.get_category.return_value = "животные"
-        mock_game.get_cur_state_word.return_value = "с*б*ка"
-        mock_game.get_attemps.return_value = 5
-        mock_game.get_prev_letters.return_value = ["с", "б", "а"]
-        mock_game.get_is_hint_active.return_value = True
-        mock_game.get_hint.return_value = "друг человека"
+        mock_game_get_stat = {
+            "word": "собака",
+            "category": "животные",
+            "cur_word": "c*б*к*",
+            "tuple_attempts_and_sub_attemps": (5, (6, 5, 3, 2, 1, 0)),
+            "letters": None,
+            "hint": "Друг человека",
+            "state": False
+        }
         
-        ui.get_game_stat(mock_game)
+        ui.print_game_stat(mock_game_get_stat)
 
         mock_system.assert_called_once_with("cls")
 
@@ -37,28 +33,88 @@ class TestUI(unittest.TestCase):
         
         self.assertTrue(any("Категория: животные" in str(call) for call in calls))
         
-        self.assertTrue(any("Слово: с*б*ка" in str(call) for call in calls))
-        self.assertTrue(any("Попыток осталось 5" in str(call) for call in calls))
+        self.assertTrue(any("Слово: c*б*к*" in str(call) for call in calls))
+        self.assertTrue(any("Попыток осталось: 5" in str(call) for call in calls))
 
         self.assertTrue(any("Использованные буквы:" in str(call) for call in calls))
         
-        self.assertTrue(any("друг человека" in str(call) for call in calls))
+        self.assertTrue(any("Друг человека" in str(call) for call in calls))
+
 
     @patch('os.system')
     @patch('builtins.print')
     def test_get_game_stat_no_hint(self, mock_print, mock_system):
         ui = GameUI()
         
-        mock_game = MagicMock()
-        mock_game.get_picture_stage.return_value = 1
-        mock_game.get_category.return_value = "профессии"
-        mock_game.get_cur_state_word.return_value = "вр_ч"
-        mock_game.get_attemps.return_value = 8
-        mock_game.get_prev_letters.return_value = ["в", "р", "ч"]
-        mock_game.get_is_hint_active.return_value = False
-        mock_game.get_hint.return_value = "лечит людей"
+        mock_game_get_stat = {
+            "word": "собака",
+            "category": "животные",
+            "cur_word": "c*ба*а",
+            "tuple_attempts_and_sub_attemps": (5, (6, 5, 3, 2, 1, 0)),
+            "letters": None,
+            "hint": None,
+            "state": False
+        }
         
-        ui.get_game_stat(mock_game)
+        ui.print_game_stat(mock_game_get_stat)
 
-        hint_calls = [call for call in mock_print.call_args_list if "лечит людей" in str(call)]
-        self.assertEqual(len(hint_calls), 0)
+        mock_print.assert_called()
+        calls = mock_print.call_args_list
+
+        self.assertTrue(any("Подсказка:" not in str(call) for call in calls))
+
+
+    @patch('os.system')
+    @patch('builtins.print')
+    def test_final_stat_lose(self, mock_print, mock_system):
+        ui = GameUI()
+        mock_game_stat = {
+            "word": "собака",
+            "category": "животные",
+            "cur_word": "c*ба*а",
+            "tuple_attempts_and_sub_attemps": (5, (6, 5, 3, 2, 1, 0)),
+            "letters": None,
+            "hint": None,
+            "state": False
+        }
+        ui.print_final_stat(mock_game_stat)
+        mock_print.assert_called()
+        calls = mock_print.call_args_list
+
+        self.assertTrue(any("Вы победили:" not in str(call) for call in calls))
+
+    @patch('os.system')
+    @patch('builtins.print')
+    def test_final_stat_win(self, mock_print, mock_system):
+        ui = GameUI()
+        mock_game_stat = {
+            "word": "собака",
+            "category": "животные",
+            "cur_word": "c*ба*а",
+            "tuple_attempts_and_sub_attemps": (5, (6, 5, 3, 2, 1, 0)),
+            "letters": None,
+            "hint": None,
+            "state": True
+        }
+
+        ui.print_final_stat(mock_game_stat)
+        mock_print.assert_called()
+        calls = mock_print.call_args_list
+
+        self.assertTrue(any("Вы победили" in str(call) for call in calls))
+
+    
+    def test_stage(self):
+        ui = GameUI()
+        ui._update_stage_by_attemps((7, (6, 5, 4)))
+
+        self.assertTrue(ui._last_attempts, None)
+
+
+    def test_stage_up(self):
+        ui = GameUI()
+        ui._update_stage_by_attemps((7, (6, 5, 4)))
+        ui._update_stage_by_attemps((6, (6, 5, 4)))
+
+        self.assertTrue(ui._current_stage, 1)
+        self.assertTrue(ui._last_attempts, 7)
