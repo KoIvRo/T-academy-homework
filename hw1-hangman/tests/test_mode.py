@@ -1,11 +1,14 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import io
+
 import sys
 import os
-import io
-from mode import not_interactive_mode, interactive_mode
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from src.mode import not_interactive_mode, interactive_mode
 
-class TetsNotInteractiveMode(unittest.TestCase):
+
+class TestNotInteractiveMode(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_not_interactive_mode_pos(self, mock_stdout):
@@ -34,57 +37,54 @@ class TetsNotInteractiveMode(unittest.TestCase):
     def test_not_interactive_mode_invalid_input(self):        
         with self.assertRaises(ValueError) as context:
             not_interactive_mode("1", "1")
-        
-        self.assertEqual(str(context.exception), "Ввод должен содержать только буквы")
-
-        with self.assertRaises(ValueError) as context:
-            not_interactive_mode("1", "1")
-        
         self.assertEqual(str(context.exception), "Ввод должен содержать только буквы")
     
     def test_not_interactive_mode_diffirent_len_input(self):
         with self.assertRaises(ValueError) as context:
             not_interactive_mode("абв", "абвг")
-        
         self.assertEqual(str(context.exception), "Слова должны быть одинковой длины")
 
+
 class TestInteractiveMode(unittest.TestCase):
-    @patch('mode.MainGame')
-    @patch('mode.GameUI')
-    @patch('mode.PrepareGame')
+    @patch('src.mode.MainGame')
+    @patch('src.mode.GameUI')
+    @patch('src.mode.PrepareGame')
     def test_interactive_mode_win(self, mock_prepare, mock_ui, mock_game):
         mock_prepare.word_choice.return_value = ("кот", "word", "hint")
         mock_prepare.difficult_choice.return_value = 7
+
         mock_ui_instance = MagicMock()
         mock_ui.return_value = mock_ui_instance
-        mock_ui_instance.get_len_hangman_stage.return_value = 6
-        
+
         mock_game_instance = MagicMock()
         mock_game.return_value = mock_game_instance
-        mock_game_instance.get_is_win.side_effect = [False, False, True]
-        mock_game_instance.get_attemps.return_value = 3
-        
-        interactive_mode()
-        
-        self.assertEqual(mock_game_instance.guess_letter.call_count, 2)
-        mock_game_instance.status_check.assert_called_once()
+        mock_game_instance.game_is_active.side_effect = [True, True, False]
+        mock_game_instance.get_game_stat.return_value = {"stat": "dummy"}
 
-    @patch('mode.MainGame')
-    @patch('mode.GameUI')
-    @patch('mode.PrepareGame')
+        interactive_mode()
+
+        self.assertEqual(mock_game_instance.guess_letter.call_count, 2)
+        self.assertEqual(mock_ui_instance.print_game_stat.call_count, 2)
+        mock_ui_instance.print_final_stat.assert_called_once_with({"stat": "dummy"})
+
+    @patch('src.mode.MainGame')
+    @patch('src.mode.GameUI')
+    @patch('src.mode.PrepareGame')
     def test_interactive_mode_lose_condition(self, mock_prepare, mock_ui, mock_game):
         mock_prepare.word_choice.return_value = ("кот", "word", "hint")
         mock_prepare.difficult_choice.return_value = 3
+
         mock_ui_instance = MagicMock()
         mock_ui.return_value = mock_ui_instance
-        mock_ui_instance.get_len_hangman_stage.return_value = 6
-        
+
         mock_game_instance = MagicMock()
         mock_game.return_value = mock_game_instance
-        mock_game_instance.get_is_win.return_value = False
-        mock_game_instance.get_attemps.side_effect = [3, 2, 1, 0]
-        
+
+        mock_game_instance.game_is_active.side_effect = [True, True, True, False]
+        mock_game_instance.get_game_stat.return_value = {"stat": "dummy"}
+
         interactive_mode()
-        
+
         self.assertEqual(mock_game_instance.guess_letter.call_count, 3)
-        mock_game_instance.status_check.assert_called_once()
+        self.assertEqual(mock_ui_instance.print_game_stat.call_count, 3)
+        mock_ui_instance.print_final_stat.assert_called_once_with({"stat": "dummy"})

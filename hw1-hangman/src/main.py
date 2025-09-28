@@ -20,7 +20,6 @@ def main() -> None:
     elif not args.hidden_word and not args.visible_word:
         interactive_mode()
     else:
-        print(1)
         return
 
 if __name__ == "__main__":

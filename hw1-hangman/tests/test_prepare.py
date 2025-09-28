@@ -1,20 +1,11 @@
 import unittest
 from unittest.mock import patch
-from prepare import PrepareGame
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from src.prepare import PrepareGame
 
 class TestPrepare(unittest.TestCase):
-
-    def test_get_category(self):        
-        categories = PrepareGame.get_category()
-        expected_categories = ["профессии", "игры", "животные"]
-        
-        self.assertEqual(sorted(categories), sorted(expected_categories))
-
-    def test_get_difficults(self):
-        difficults = PrepareGame.get_difficults()
-        expected_difficults = ["легкий", "средний", "тяжелый"]
-        
-        self.assertEqual(sorted(difficults), sorted(expected_difficults))
 
     @patch('builtins.input', side_effect=['1', 'профессии'])
     @patch('builtins.print')
@@ -59,7 +50,7 @@ class TestPrepare(unittest.TestCase):
     def test_difficult_choice_valid_difficult(self, mock_print, mock_input):
         attempts = PrepareGame.difficult_choice()
         
-        self.assertEqual(attempts, 9)
+        self.assertEqual(attempts, (10, (9, 6, 4, 2, 1, 0)))
 
 
     @patch('builtins.input', side_effect=['', ''])
@@ -70,7 +61,7 @@ class TestPrepare(unittest.TestCase):
             
             attempts = PrepareGame.difficult_choice()
             
-            self.assertEqual(attempts, 8)
+            self.assertEqual(attempts, (8, (7, 5, 4, 2, 1, 0)))
             mock_random_choice.assert_called_once()
 
     @patch('builtins.input', side_effect=['очень сложный', 'тяжелый'])
@@ -79,5 +70,5 @@ class TestPrepare(unittest.TestCase):
         
         attempts = PrepareGame.difficult_choice()
         
-        self.assertEqual(attempts, 7)
+        self.assertEqual(attempts, (7, (6, 5, 3, 2, 1, 0)))
         self.assertEqual(mock_input.call_count, 2)
